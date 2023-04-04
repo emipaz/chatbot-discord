@@ -29,8 +29,9 @@ pip install openai
  bot_key=<token_de_discord>
  gpt_key=<token_de_openai>
  ```
- Reemplaza `<token_de_discord>` y `<token_de_openai>` con los tokens que copiaste anteriormente.
-8. Ejecuta el archivo `main.py` para comenzar a utilizar el bot.
+ Reemplaza `<token_de_discord>` y `<token_de_openai>` con los tokens que copiaste anteriormente.  
+
+8. Ejecuta el archivo `chat_discord.py` para comenzar a utilizar el bot.
 
 ## Uso
 
