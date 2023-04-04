@@ -18,7 +18,12 @@ while True:
     entrada = input("\n : ")
     print()
 
-    if entrada == "exit()": break
+    if entrada == "exit()": 
+        break
+    elif entrada == "clear":
+        os.system("clear")
+        entrada = "hola"
+
 
     completion = openai.ChatCompletion.create(
                     model       = "gpt-3.5-turbo", 

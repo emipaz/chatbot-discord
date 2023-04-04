@@ -41,6 +41,9 @@ class MyClient(discord.Client):
             return 
         command , user_message = None, None
 
+        if message.content == "" or message.content.lower() == "help" or message.content.lower() == "ayuda":
+             await message.channel.send(f"Bienvenido {message.author} para usar gpt antepone /bot a tu consulta")
+                                       
         for text in ["/bot","/gpt","/chat"]:
             if message.content.startswith(text):
                 command = message.content.split(" ")[0]
