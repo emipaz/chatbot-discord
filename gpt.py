@@ -28,6 +28,11 @@ while True:
 
     cola.append(entrada)
 
+    # print(sum([ len(x.split()) for x in cola ]))
+
+    while sum([ len(x.split()) for x in cola ]) > 3000:
+        cola.popleft()
+
     conversacion = [{"role": "user", "content": x} for x in cola]
 
 
@@ -40,6 +45,8 @@ while True:
                     max_tokens  = 2048)
     
     cola.append(completion.choices[0].message.content)
+
+    
 
     for letra in completion.choices[0].message.content:
         print(letra, end= "", flush=True)

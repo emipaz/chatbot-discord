@@ -13,9 +13,14 @@ openai.api_key = openai_key
 
 contexto = deque(maxlen=10)
 
+
 def gpt(entrada):
     contexto.append(entrada)
+    while sum ( [len(x.split()) for x in contexto]) > 2048:
+        contexto.popleft()
+
     prompt = [{"role": "user", "content": x} for x in contexto]
+
     completion = openai.ChatCompletion.create(
                     model       = "gpt-3.5-turbo", 
                     messages    = prompt,
@@ -48,13 +53,13 @@ class MyClient(discord.Client):
         if message.content.lower() in ["", "help","ayuda","/?","?"]:
              await message.channel.send(f"Bienvenido {message.author}\npara usar gpt antepone /bot a tu consulta")
                                        
-        for text in ["/bot","/gpt","/chat"]:
+        for text in ["/bot","/gpt","/chat","/b"]:
             if message.content.startswith(text):
                 command = message.content.split(" ")[0]
                 user_message = message.content.replace(text,"")
                 # print("commando :",command, user_message)
         
-        if command in ["/bot","/gpt"]:
+        if command in ["/bot","/gpt","/b"]:
             if user_message == "":
                 user_message = "hola"
             res = gpt(user_message)
