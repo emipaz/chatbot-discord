@@ -5,6 +5,8 @@ import openai
 import time
 from dotenv import load_dotenv
 import os
+from collections import deque
+cola = deque(maxlen=10)
 
 load_dotenv()
 
@@ -24,12 +26,20 @@ while True:
         os.system("clear")
         entrada = "hola"
 
+    cola.append(entrada)
+
+    conversacion = [{"role": "user", "content": x} for x in cola]
+
 
     completion = openai.ChatCompletion.create(
-                    model       = "gpt-3.5-turbo", 
-                    messages    = [{"role": "user", "content": entrada}],
+                    model       = "gpt-3.5-turbo",
+                    messages = conversacion,
+
+                    # messages    = [{"role": "user", "content": entrada}],
                     temperature = 1,
                     max_tokens  = 2048)
+    
+    cola.append(completion.choices[0].message.content)
 
     for letra in completion.choices[0].message.content:
         print(letra, end= "", flush=True)

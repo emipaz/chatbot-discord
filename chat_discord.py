@@ -2,22 +2,26 @@ import discord
 from dotenv import load_dotenv
 import os
 import openai
-
+from collections import deque
 
 load_dotenv()
 
-discord_token = (os.getenv("bot_key"))
-openai_key = os.getenv("gpt_key")
+discord_token  = (os.getenv("bot_key"))
+openai_key     = os.getenv("gpt_key")
 
 openai.api_key = openai_key
 
+contexto = deque(maxlen=10)
+
 def gpt(entrada):
+    contexto.append(entrada)
+    prompt = [{"role": "user", "content": x} for x in contexto]
     completion = openai.ChatCompletion.create(
                     model       = "gpt-3.5-turbo", 
-                    messages    = [{"role": "user", "content": entrada}],
+                    messages    = prompt,
                     temperature = 1,
                     max_tokens  = 2048)
-    
+    contexto.append(completion.choices[0].message.content)
     return completion.choices[0].message.content
 
 def chat (entrada):
@@ -41,8 +45,8 @@ class MyClient(discord.Client):
             return 
         command , user_message = None, None
 
-        if message.content == "" or message.content.lower() == "help" or message.content.lower() == "ayuda":
-             await message.channel.send(f"Bienvenido {message.author} para usar gpt antepone /bot a tu consulta")
+        if message.content.lower() in ["", "help","ayuda","/?","?"]:
+             await message.channel.send(f"Bienvenido {message.author}\npara usar gpt antepone /bot a tu consulta")
                                        
         for text in ["/bot","/gpt","/chat"]:
             if message.content.startswith(text):
@@ -51,6 +55,8 @@ class MyClient(discord.Client):
                 # print("commando :",command, user_message)
         
         if command in ["/bot","/gpt"]:
+            if user_message == "":
+                user_message = "hola"
             res = gpt(user_message)
             await message.channel.send(f"chat : {res}")
         elif command == "/chat":
