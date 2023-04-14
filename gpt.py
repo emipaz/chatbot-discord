@@ -1,24 +1,41 @@
 #! /usr/bin/python3
 # gpt para ejecutarlo desde consola
-
 import openai
+RateLimitError = openai.error.RateLimitError
 import time
 from dotenv import load_dotenv
 import os
 from collections import deque
-cola = deque(maxlen=10)
+from colorama import Fore , Style 
+import pickle
 
 load_dotenv()
 
-openai_key = os.getenv("gpt_key")
+verde          = Fore.GREEN
+azul           = Fore.BLUE 
+rest           = Fore.RESET 
+cola           = deque(maxlen=10)
 
-openai.api_key = openai_key
+openai.api_key = os.getenv("gpt_key")
+user           = os.environ["USER"]
 
+def consulta(conversacion):
+    return openai.ChatCompletion.create(
+                    model       = "gpt-3.5-turbo",
+                    messages = conversacion,
+                    temperature = 1,
+                    max_tokens  = 2048).choices[0].message.content
 
+ind = 0
+inicio = time.time()
 while True:
 
-    entrada = input("\n : ")
+    entrada = input(f"\n{verde}{user} $: {rest}")
     print()
+    if ind == 3 :
+        inicio = time.time()
+        ind = 0
+    ind += 1
 
     if entrada == "exit()": 
         break
@@ -27,28 +44,31 @@ while True:
         entrada = "hola"
 
     cola.append(entrada)
+    tokens = sum([ len(x.split()) for x in cola ])
 
-    # print(sum([ len(x.split()) for x in cola ]))
-
-    while sum([ len(x.split()) for x in cola ]) > 3000:
+    while  (tokens := sum([ len(x.split()) for x in cola ])) > 3000:
         cola.popleft()
+
 
     conversacion = [{"role": "user", "content": x} for x in cola]
 
+    try:
+        respuesta = consulta(conversacion)
 
-    completion = openai.ChatCompletion.create(
-                    model       = "gpt-3.5-turbo",
-                    messages = conversacion,
-
-                    # messages    = [{"role": "user", "content": entrada}],
-                    temperature = 1,
-                    max_tokens  = 2048)
+    except RateLimitError:
+        print ("Error")
+        time.sleep (int(time.time() - inicio))
     
-    cola.append(completion.choices[0].message.content)
-
+    except Exception as e:
+        print("ERROR :" + e)
+        time.sleep(2)
+        continue
+    else:
+        cola.append(respuesta)
     
-
-    for letra in completion.choices[0].message.content:
-        print(letra, end= "", flush=True)
-        time.sleep(0.01)
-    print()                    
+        print(f"{azul}GPT $: {rest}", end="")
+    
+        for letra in respuesta:
+            print(letra, end= "", flush=True)
+            time.sleep(0.01)
+        print()                    
