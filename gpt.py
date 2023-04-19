@@ -42,6 +42,10 @@ while True:
     elif entrada == "clear":
         os.system("clear")
         entrada = "hola"
+    elif entrada.lower().startswith("/es"):
+        entrada = "traducir al español :" + entrada
+    elif entrada.lower().startswith("/en"):
+        entrada = "traducir al ingles :" + entrada
 
     cola.append(entrada)
     tokens = sum([ len(x.split()) for x in cola ])
@@ -60,7 +64,7 @@ while True:
         time.sleep (int(time.time() - inicio))
     
     except Exception as e:
-        print("ERROR :" + e)
+        print("ERROR :" + str(e))
         time.sleep(2)
         continue
     else:
