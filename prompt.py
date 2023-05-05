@@ -19,6 +19,7 @@ comandos = {
     "/bot": "",
     "/gpt": "",
     "/chat": None,
+    "/img":"pedir una imagen      : ",
     "/es": "traducir al español   : ",
     "/en": "traducir al ingles    : ",
     "/it": "traducir al italiano  : ",

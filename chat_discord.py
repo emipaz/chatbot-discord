@@ -26,7 +26,7 @@ def gpt(us, entrada):
     while (tokens := sum ( [len(x.split()) for x in chats[us]])) > 2048:
         chats[us].popleft()
     
-    print(len(chats[us]), tokens)
+    # print(len(chats[us]), tokens)
 
     prompt = [{"role": "user", "content": x} for x in chats[us]]
 
@@ -36,7 +36,7 @@ def gpt(us, entrada):
                     temperature = 1,
                     max_tokens  = 2048)
     chats[us].append(completion.choices[0].message.content)
-    print(chats)
+    # print(chats)
     return completion.choices[0].message.content
 
 def chat (entrada):
@@ -45,6 +45,19 @@ def chat (entrada):
         prompt = entrada,
         max_tokens = 2048)
     return completion.choices[0].text
+
+def imagen(mensaje):
+    print(mensaje)
+
+    response = openai.Image.create(
+            prompt = mensaje,
+            n = 1, # cantidad de imagenes puede ir de 1 a 10
+            size = "1024x1024"
+        )
+    # print(response)
+    url = response["data"][0]["url"]
+    return  url
+
 
 class MyClient(discord.Client):
 
@@ -76,7 +89,7 @@ class MyClient(discord.Client):
         else:
             command , user_message = None, None
 
-        for text in comandos.keys():
+        for text in list(comandos.keys()) + ["/img"]:
             if message.content.startswith(text):
                 command = message.content.split(" ")[0]
                 user_message = message.content.replace(text,"")
@@ -88,6 +101,13 @@ class MyClient(discord.Client):
         elif command.lower() == "/chat":
             res = chat(user_message)
             await message.channel.send(f"chat : {res}")
+        elif command.lower() == "/img":
+            print("pidiendo image :",user_message)
+
+            url = imagen(user_message)
+            await message.channel.send(url)
+            return
+
         else:
             user_message = comandos[command] + user_message 
 
