@@ -15,7 +15,10 @@ async def bot(update:Update, context:ContextTypes.DEFAULT_TYPE):
     print(mensage)
     
     usuario = update.effective_user.first_name
-    comando, mensage2 = mensage.split(maxsplit=1)
+    try:
+        comando, mensage2 = mensage.split(maxsplit=1)
+    except ValueError:
+        comando = ""
     print(comando)
     
     if comando in comandos:
