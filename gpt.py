@@ -1,4 +1,4 @@
-#! /home/emi/Escritorio/chatgpt/env/bin/python
+#!/home/emi/Escritorio/chatgpt/env/bin/python
 # gpt para ejecutarlo desde consola
 import openai
 RateLimitError = openai.error.RateLimitError
@@ -8,18 +8,25 @@ from dotenv import load_dotenv
 import os
 from collections import deque
 from colorama import Fore , Style 
-from prompt import comandos
+from prompt import comandos, markdown
 from PyInquirer import prompt
 import webbrowser as web
 import pyperclip
+import signal
 
+def handler(sig, frame):
+    pass
+    # print('Se ha recibido una interrupción')
+    # realiza las acciones necesarias antes de finalizar el programa
+
+signal.signal(signal.SIGINT, handler)
 
 load_dotenv()
 
 verde          = Fore.GREEN
 azul           = Fore.BLUE 
 rest           = Fore.RESET 
-openai.api_key = os.getenv("gpt_key")
+openai.api_key = os.getenv("gpt_key_b")
 user           = os.environ["USER"]
 
 def imagen(mensaje):
@@ -40,7 +47,6 @@ def consulta(conversacion):
                     temperature = 1,
                     max_tokens  = 2048)
     return response.choices[0].message.content , response.usage["total_tokens"]
-
 
 def guardar(charla):
     if not os.path.exists("charlas"):
@@ -68,18 +74,19 @@ def leer():
     return charla
 
 def main():
-    ind    = 0
+    ind    = 1
     inicio = time.time()
     charla = []
     cola   = deque(maxlen=10)
     tokens = 0
-    error = False
+    error  = False
     while True:
         if not error:
             entrada = input(f"\n{verde}{user} $: {rest}")
+            if entrada.startswith("^C"): entrada = entrada[2:]
             print()
         
-        if ind == 3 :
+        if ind == 4 :
             inicio = time.time()
             ind = 0
         ind += 1
@@ -120,6 +127,10 @@ def main():
             charla = []
             cola   = deque(maxlen=10)
             continue
+        elif entrada == "traducir()" or entrada == "tr":
+            entrada = "traducir al español :\n" + pyperclip.paste()    
+        elif entrada == "markdownd()" or entrada == "mark()":
+            entrada =  markdown + pyperclip.paste()  
         elif (im_promt := entrada.split(" ", maxsplit=1))[0] == "/imagen":
             prt = consulta ( [{"role": "user","content": "traducir al el ingles: " + im_promt[1]}])
             print(imagen(prt))
@@ -131,34 +142,46 @@ def main():
             charla.append(user+" :"+ entrada)
             cola.append(entrada)
 
-        #while (tokens := sum([ len(x.split()) for x in cola ])) > 3000:
-        #    print([ len(x.split()) for x in cola ])
-        #    cola.popleft()
-        #print(len(cola),[ len(x.split()) for x in cola ])
-        # print(tokens)
         conversacion = [{"role": "user", "content": x} for x in cola]
-
+    
         try:
             respuesta , tokens = consulta(conversacion)
-        except RateLimitError:
-            print ("Error")
-            time.sleep (int(time.time() - inicio))
+        except RateLimitError as e:
+            print(e)
+            texto = "Error, solo 3 mensjes por minuto restan :"
+            times = 60 - (int(time.time() - int(inicio)))
+            for i in range(times):
+                print (texto + str(times - i).zfill(2), end= "\b" * (len(texto)+2), flush=True)
+                time.sleep(1)
+            error = True           
         except InvalidRequestError:
-            print("Please reduce the length of the messages")
-        except Exception as e:
-            print("ERROR :" + str(type(e)) + str(e))
-            print(tokens)
-            error = True
-            cola.popleft()
-            time.sleep(1)
-            continue
+            print("Se superaron los tokens")
+            # print("total de tokens :", tokens)
+            
+            if input("reducimos contexto S/N? o reduci la cantidad de palabras del promtp :").lower() == "s":
+                error = True
+                try:
+                    cola.popleft()
+                except IndexError:
+                    print("el contexto esta vacio, reduzca el prompt")
+                    error = False
+                    continue
+                else:
+                    time.sleep(1)
+            else:
+                error = False
+                continue
+            
+        # except Exception as e:
+        #     print("ERROR :" + str(type(e)) + str(e))
+        #     error = True
+        #     cola.popleft()
+        #     time.sleep(1)
         else:
             error = False
             cola.append(respuesta)
-            charla.append("GPT $:"+ respuesta)
-        
+            charla.append("GPT $:"+ respuesta) 
             print(f"{azul}GPT $: {rest}", end="")
-        
             for letra in respuesta:
                 print(letra, end= "", flush=True)
                 time.sleep(0.01)

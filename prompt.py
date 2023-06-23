@@ -14,7 +14,7 @@ prompt_bienvenida = """
     http://www.graduadosfiuba.org y
     http://ia.tuexitoprofesional.guru, 
     """
-
+markdown =  "traducir al español con formulas en latex en formato Markdown : "
 comandos = {
     "/bot": "",
     "/gpt": "",
@@ -36,5 +36,6 @@ comandos = {
     "/gn": "traducir al guaraní   : ",
     "/he": "traducir al hebreo    : ",
     "/la": "traducir al latín     : ",
-
+    "/pl": "traducir al polaco  : ",
+    
 }
